@@ -1,119 +1,21 @@
-<!DOCTYPE html>
-<html lang="ro">
-<head>
-<meta charset="UTF-8">
-<title>Lobby Game</title>
-
-<style>
-body {
-    background: #0d0d0d;
-    color: white;
-    text-align: center;
-    font-family: Arial;
-}
-
-button {
-    padding: 10px 20px;
-    margin: 5px;
-    background: #00ffcc;
-    border: none;
-    cursor: pointer;
-}
-
-input {
-    padding: 8px;
-    margin: 5px;
-}
-</style>
-</head>
-
-<body>
-
-<h1>Typing Game</h1>
-
-<input id="username" placeholder="Username">
-<br><br>
-
-<button onclick="createLobby()">Create Lobby</button>
-
-<br><br>
-
-<input id="code" placeholder="Lobby Code">
-<button onclick="joinLobby()">Join Lobby</button>
-
-<h2 id="status"></h2>
-<div id="players"></div>
-
-<div id="game" style="display:none;">
-    <h2 id="sentence"></h2>
-    <input id="answer" placeholder="Scrie aici...">
-    <button onclick="submitAnswer()">Trimite</button>
-    <h3 id="winner"></h3>
-</div>
-
-<script>
-let lobby = null;
-let name = null;
-
-async function createLobby() {
-    name = document.getElementById("username").value;
-    const res = await fetch("/api/lobby?action=create");
-    const data = await res.json();
-
-    lobby = data.code;
-
-    await fetch(`/api/lobby?action=join&code=${lobby}&name=${name}`);
-
-    document.getElementById("status").innerText = "Lobby: " + lobby;
-
-    startPolling();
-}
-
 async function joinLobby() {
     name = document.getElementById("username").value;
     lobby = document.getElementById("code").value.toUpperCase();
 
-    await fetch(`/api/lobby?action=join&code=${lobby}&name=${name}`);
+    if (!name) {
+        alert("Scrie username!");
+        return;
+    }
+
+    const res = await fetch(`/api/lobby?action=join&code=${lobby}&name=${name}`);
+    const data = await res.json();
+
+    if (data.error) {
+        document.getElementById("status").innerText = data.error;
+        return;
+    }
 
     document.getElementById("status").innerText = "Lobby: " + lobby;
 
     startPolling();
 }
-
-async function startGame() {
-    await fetch(`/api/lobby?action=start&code=${lobby}`);
-}
-
-async function submitAnswer() {
-    const text = document.getElementById("answer").value;
-
-    await fetch(`/api/lobby?action=answer&code=${lobby}&name=${name}&text=${text}`);
-}
-
-function startPolling() {
-    setInterval(async () => {
-        const res = await fetch(`/api/lobby?action=get&code=${lobby}`);
-        const data = await res.json();
-
-        document.getElementById("players").innerText =
-            "Players: " + data.players.join(", ");
-
-        if (data.sentence) {
-            document.getElementById("game").style.display = "block";
-            document.getElementById("sentence").innerText = data.sentence;
-        }
-
-        if (data.winner) {
-            document.getElementById("winner").innerText =
-                "Winner: " + data.winner;
-        }
-
-    }, 1000);
-}
-</script>
-
-<br>
-<button onclick="startGame()">START GAME</button>
-
-</body>
-</html>
