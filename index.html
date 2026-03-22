@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<title>Lobby System</title>
+
+<style>
+body {
+    background: #0d0d0d;
+    color: white;
+    text-align: center;
+    font-family: Arial;
+    padding-top: 100px;
+}
+
+button {
+    padding: 15px 25px;
+    margin: 10px;
+    font-size: 18px;
+    background: #00ffcc;
+    border: none;
+    cursor: pointer;
+}
+
+input {
+    padding: 10px;
+    font-size: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Lobby System</h1>
+
+<button onclick="createLobby()">Create Lobby</button>
+
+<br><br>
+
+<input id="code" placeholder="Lobby Code">
+<button onclick="joinLobby()">Join Lobby</button>
+
+<h2 id="status"></h2>
+
+<script>
+let currentLobby = null;
+
+async function createLobby() {
+    const res = await fetch("/api/lobby?action=create");
+    const data = await res.json();
+
+    currentLobby = data.code;
+
+    document.getElementById("status").innerText =
+        "Lobby creat: " + currentLobby;
+
+    startPolling();
+}
+
+async function joinLobby() {
+    const code = document.getElementById("code").value.toUpperCase();
+
+    const res = await fetch(`/api/lobby?action=join&code=${code}`);
+    const data = await res.json();
+
+    if (data.error) {
+        document.getElementById("status").innerText = data.error;
+        return;
+    }
+
+    currentLobby = code;
+
+    document.getElementById("status").innerText =
+        "Ai intrat în lobby: " + code;
+
+    startPolling();
+}
+
+function startPolling() {
+    setInterval(async () => {
+        if (!currentLobby) return;
+
+        const res = await fetch(`/api/lobby?action=get&code=${currentLobby}`);
+        const data = await res.json();
+
+        document.getElementById("status").innerText =
+            `Lobby: ${currentLobby} | Players: ${data.players}`;
+    }, 2000);
+}
+</script>
+
+</body>
+</html>
