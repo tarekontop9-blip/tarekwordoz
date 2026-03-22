@@ -1,10 +1,10 @@
 let lobbies = {};
 
 const sentences = [
-    "scrie asta rapid",
-    "cine e cel mai rapid",
-    "tasteaza asta acum",
-    "viteza conteaza",
+    "Scrie aceasta propozitie cat mai rapid posibil fara greseli",
+    "Cel mai rapid castiga acest joc de viteza extrema",
+    "Tasteaza corect si rapid pentru a deveni castigator",
+    "Daca vezi asta trebuie sa scrii mai repede decat ceilalti",
 ];
 
 function generateCode() {
@@ -34,7 +34,7 @@ export default function handler(req, res) {
     // JOIN
     if (action === "join") {
         if (!lobbies[code]) {
-            return res.json({ error: "Lobby nu există" });
+            return res.json({ error: "Lobby nu exista" });
         }
 
         if (!name) {
@@ -76,7 +76,7 @@ export default function handler(req, res) {
 
     // GET
     if (action === "get") {
-        if (!lobbies[code]) return res.json({ error: "No lobby" });
+        if (!lobbies[code]) return res.json({ error: "Lobby nu exista" });
         return res.json(lobbies[code]);
     }
 
